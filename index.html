@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Tunebot — Your Music Mentor</title>
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --card: #13203a;
+      --text: #eaf3ff;
+      --muted: #a9b9d6;
+      --accent: #4da6ff;
+      --accent-hover: #66b3ff;
+      --white-key: #ffffff;
+      --black-key: #222;
+      --active-white: #70c8ff;
+      --active-black: #2e90ff;
+      --white-w: 32px;
+      --white-h: 100px;
+      --black-w: 20px;
+      --black-h: 60px;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 20%, #0b162d, #060b14);
+      color: var(--text);
+      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: var(--accent);
+      margin-bottom: 18px;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      text-shadow: 0 0 8px rgba(77,166,255,0.5);
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    select, button {
+      padding: 10px 14px;
+      border-radius: 10px;
+      border: none;
+      font-size: 15px;
+      transition: all 0.25s ease;
+    }
+
+    select {
+      background: #162544;
+      color: var(--text);
+      box-shadow: 0 0 6px rgba(77,166,255,0.3);
+    }
+
+    select:hover, select:focus {
+      background: #1b2f55;
+      outline: none;
+    }
+
+    button {
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 12px rgba(77,166,255,0.3);
+    }
+
+    button:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(77,166,255,0.45);
+    }
+
+    #progressionLabel {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-align: center;
+    }
+
+    .results {
+      width: 900px;
+      max-width: calc(100% - 40px);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin-top: 25px;
+    }
+
+    .chord-card {
+      background: linear-gradient(145deg, #14274e, #0b162e);
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+      transition: transform 0.25s ease;
+    }
+
+    .chord-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 26px rgba(77,166,255,0.25);
+    }
+
+    .chord-info {
+      width: 160px;
+      min-width: 120px;
+    }
+
+    .chord-name {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--accent);
+    }
+
+    .chord-meta {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 4px;
+    }
+
+    .mini-piano {
+      position: relative;
+      width: calc(var(--white-w) * 14);
+      height: var(--white-h);
+      background: #111827;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .white-key {
+      position: relative;
+      display: inline-block;
+      width: var(--white-w);
+      height: var(--white-h);
+      background: var(--white-key);
+      border: 1px solid #aaa;
+      box-sizing: border-box;
+      z-index: 1;
+      transition: background 0.2s ease;
+    }
+
+    .white-key[data-active="true"] {
+      background: var(--active-white);
+      box-shadow: 0 0 8px rgba(77,166,255,0.5);
+    }
+
+    .black-key {
+      position: absolute;
+      width: var(--black-w);
+      height: var(--black-h);
+      background: var(--black-key);
+      border-radius: 0 0 3px 3px;
+      top: 0;
+      z-index: 2;
+      transition: background 0.2s ease;
+    }
+
+    .black-key[data-active="true"] {
+      background: var(--active-black);
+      box-shadow: 0 0 10px rgba(77,166,255,0.6);
+    }
+
+    footer {
+      margin-top: 40px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🎹 Tunebot — Piano Progression Visualizer</h1>
+
+  <div class="controls">
+<select id="keyDropdown">
+  <option>Select Scale</option>
+  <!-- Natural keys -->
+  <option value="A">A</option>
+  <option value="B">B</option>
+  <option value="C">C</option>
+  <option value="D">D</option>
+  <option value="E">E</option>
+  <option value="F">F</option>
+  <option value="G">G</option>
+  <!-- Sharp keys -->
+  <option value="A#">A#</option>
+  <option value="C#">C#</option>
+  <option value="D#">D#</option>
+  <option value="F#">F#</option>
+  <option value="G#">G#</option>
+</select>
+
+    <select id="genreDropdown">
+      <option>Select Genre</option>
+      <option>Pop</option><option>Rock</option><option>Jazz</option>
+      <option>Classical</option><option>R&B</option><option>Lo-Fi</option>
+    </select>
+
+    <button id="generateBtn">Generate Progression</button>
+  </div>
+
+  <div id="progressionLabel">Select a scale and genre to start 🎶</div>
+
+  <div class="results" id="results"></div>
+
+  <footer>© 2025 Tunebot — Designed with 🎵 & creativity</footer>
+
+  <script src="tunebot.js"></script>
+</body>
+</html>
