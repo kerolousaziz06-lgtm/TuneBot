@@ -3,164 +3,269 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Tunebot — Your Music Mentor</title>
+  <title>Tunebot — Piano Progression Visualizer</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
 
   <style>
     :root {
-      --bg: #0b1220;
-      --card: #13203a;
-      --text: #eaf3ff;
-      --muted: #a9b9d6;
-      --accent: #4da6ff;
-      --accent-hover: #66b3ff;
-      --white-key: #ffffff;
-      --black-key: #222;
-      --active-white: #70c8ff;
-      --active-black: #2e90ff;
+      /* ── Brand palette (matches learn.html) ── */
+      --black:    #04060d;
+      --deep:     #080e1c;
+      --card:     #0d1526;
+      --border:   rgba(255,255,255,0.07);
+      --gold:     #c9a84c;
+      --gold-dim: rgba(201,168,76,0.15);
+      --gold-hover: #dbbe6a;
+      --text:     #e8e0d0;
+      --muted:    #7a7060;
+      --serif:    'Cormorant Garamond', Georgia, serif;
+      --sans:     'DM Sans', system-ui, sans-serif;
+
+      /* ── Piano key colours (blue — unchanged) ── */
+      --white-key:   #f0ece3;
+      --black-key:   #12110e;
+      --active-white:#70c8ff;
+      --active-black:#2e90ff;
+      --root-key:    #c9a84c;   /* amber root matches gold brand */
+
+      /* ── Piano dimensions (unchanged) ── */
       --white-w: 32px;
       --white-h: 100px;
       --black-w: 20px;
       --black-h: 60px;
     }
 
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      background: radial-gradient(circle at 20% 20%, #0b162d, #060b14);
+      background: radial-gradient(ellipse 90% 60% at 20% 10%, #0a1628, #04060d);
       color: var(--text);
-      font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      font-family: var(--sans);
       margin: 0;
-      padding: 40px;
+      padding: 0 0 60px;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    body.panel-open {
+      padding-left: 300px;
     }
 
-    h1 {
-      color: var(--accent);
-      margin-bottom: 18px;
-      font-size: 2rem;
-      letter-spacing: 1px;
-      text-shadow: 0 0 8px rgba(77,166,255,0.5);
+    /* ── Top nav bar ── */
+    nav {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      background: rgba(4,6,13,0.75);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-sizing: border-box;
+    }
+    .nav-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--sans);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-back:hover { color: var(--gold); }
+    .nav-back svg { width: 14px; height: 14px; }
+    .nav-logo {
+      font-family: var(--serif);
+      font-size: 1.25rem;
+      font-weight: 400;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+    .nav-spacer { width: 100px; } /* balances the back link */
+
+    /* ── Page header ── */
+    .page-header {
+      text-align: center;
+      padding: 52px 24px 32px;
+    }
+    .page-eyebrow {
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 14px;
+      opacity: 0.85;
+    }
+    .page-title {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 300;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 10px;
+    }
+    .page-title em { font-style: italic; color: var(--gold); }
+    .page-sub {
+      font-size: 0.9rem;
+      font-weight: 300;
+      color: var(--muted);
     }
 
+    /* ── Controls ── */
     .controls {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 14px;
+      gap: 12px;
       margin-bottom: 20px;
+      padding: 0 24px;
     }
 
     select, button {
-      padding: 10px 14px;
+      padding: 10px 18px;
       border-radius: 10px;
       border: none;
-      font-size: 15px;
-      transition: all 0.25s ease;
+      font-size: 14px;
+      font-family: var(--sans);
+      font-weight: 400;
+      transition: all 0.22s ease;
     }
 
     select {
-      background: #162544;
+      background: #0d1526;
       color: var(--text);
-      box-shadow: 0 0 6px rgba(77,166,255,0.3);
-    }
-
-    select:hover, select:focus {
-      background: #1b2f55;
+      border: 1px solid rgba(201,168,76,0.2);
+      cursor: pointer;
       outline: none;
     }
+    select:hover, select:focus {
+      border-color: rgba(201,168,76,0.5);
+      background: #101d32;
+    }
 
-    button {
-      background: var(--accent);
-      color: white;
-      cursor: pointer;
+    /* Generate button — gold filled */
+    #generateBtn {
+      background: var(--gold);
+      color: #04060d;
       font-weight: 600;
-      letter-spacing: 0.3px;
-      box-shadow: 0 4px 12px rgba(77,166,255,0.3);
+      letter-spacing: 0.03em;
+      border: none;
+      box-shadow: 0 4px 18px rgba(201,168,76,0.25);
+      cursor: pointer;
     }
-
-    button:hover {
-      background: var(--accent-hover);
+    #generateBtn:hover {
+      background: var(--gold-hover);
       transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(77,166,255,0.45);
+      box-shadow: 0 8px 28px rgba(201,168,76,0.4);
     }
 
+    /* ── Progression label ── */
     #progressionLabel {
-      margin-top: 10px;
+      margin: 8px 0 4px;
       color: var(--muted);
-      font-size: 0.95rem;
+      font-size: 0.88rem;
+      font-weight: 300;
+      letter-spacing: 0.04em;
       text-align: center;
     }
 
+    /* ── Results grid ── */
     .results {
-      width: 900px;
+      width: 960px;
       max-width: calc(100% - 40px);
       display: flex;
       flex-direction: column;
-      gap: 20px;
-      margin-top: 25px;
+      gap: 16px;
+      margin-top: 24px;
     }
 
+    /* ── Chord card ── */
     .chord-card {
-      background: linear-gradient(145deg, #14274e, #0b162e);
-      padding: 16px;
-      border-radius: 12px;
+      background: linear-gradient(145deg, #0d1a30, #080e1c);
+      padding: 18px 20px;
+      border-radius: 14px;
       display: flex;
       gap: 16px;
       align-items: center;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.45);
-      transition: transform 0.25s ease;
+      border: 1px solid var(--border);
+      box-shadow: 0 6px 24px rgba(0,0,0,0.45);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
     }
-
     .chord-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 26px rgba(77,166,255,0.25);
+      transform: translateY(-2px);
+      border-color: rgba(201,168,76,0.2);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.55), 0 0 0 1px rgba(201,168,76,0.1);
     }
 
+    /* ── Chord info ── */
     .chord-info {
       width: 160px;
       min-width: 120px;
     }
-
-    .chord-name {
-      font-weight: 700;
-      font-size: 1.05rem;
-      color: var(--accent);
+    .inv-label {
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
     }
-
+    .chord-name {
+      font-family: var(--serif);
+      font-weight: 600;
+      font-size: 1.4rem;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 5px;
+    }
     .chord-meta {
       color: var(--muted);
-      font-size: 0.85rem;
-      margin-top: 4px;
+      font-size: 0.8rem;
+      font-weight: 300;
+      letter-spacing: 0.04em;
     }
 
+    /* ── Piano keys (unchanged — blue highlight) ── */
     .mini-piano {
       position: relative;
       width: calc(var(--white-w) * 14);
       height: var(--white-h);
-      background: #111827;
+      background: #080808;
       border-radius: 6px;
       overflow: hidden;
-      box-shadow: inset 0 2px 6px rgba(0,0,0,0.5);
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.6);
     }
-
     .white-key {
       position: relative;
       display: inline-block;
       width: var(--white-w);
       height: var(--white-h);
       background: var(--white-key);
-      border: 1px solid #aaa;
+      border: 1px solid #c0b8a8;
       box-sizing: border-box;
       z-index: 1;
       transition: background 0.2s ease;
     }
-
     .white-key[data-active="true"] {
       background: var(--active-white);
       box-shadow: 0 0 8px rgba(77,166,255,0.5);
     }
-
     .black-key {
       position: absolute;
       width: var(--black-w);
@@ -171,42 +276,174 @@
       z-index: 2;
       transition: background 0.2s ease;
     }
-
     .black-key[data-active="true"] {
       background: var(--active-black);
       box-shadow: 0 0 10px rgba(77,166,255,0.6);
     }
 
-    footer {
-      margin-top: 40px;
-      color: var(--muted);
-      font-size: 0.8rem;
+    /* ── Saved panel — fixed left rectangle ── */
+    #savedPanel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 300px;
+      background: #06090f;
+      border-right: 1px solid rgba(201,168,76,0.15);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      /* hidden off-screen by default */
+      transform: translateX(-100%);
+      transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: 6px 0 40px rgba(0,0,0,0.8);
+    }
+    #savedPanel.open {
+      transform: translateX(0);
+    }
+    #savedPanelList {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    #savedEmpty {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       text-align: center;
+      font-size: 0.8rem;
+      font-weight: 300;
+      color: #4a4438;
+      line-height: 1.9;
+      width: 200px;
+      pointer-events: none;
+    }
+    .saved-piano-card {
+      background: linear-gradient(145deg, #0c1828, #070d1a);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 10px;
+      padding: 10px 10px 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .saved-piano-card:hover { border-color: rgba(201,168,76,0.22); }
+    .saved-piano-card-name {
+      font-family: var(--serif);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .saved-piano-card-meta {
+      font-size: 0.65rem;
+      color: #4a4438;
+      letter-spacing: 0.04em;
+    }
+    .saved-piano-card-remove {
+      position: absolute;
+      top: 7px;
+      right: 7px;
+      background: transparent;
+      border: none;
+      color: #4a4438;
+      font-size: 12px;
+      cursor: pointer;
+      padding: 2px 5px;
+      border-radius: 3px;
+      line-height: 1;
+      box-shadow: none;
+      transform: none;
+      transition: color 0.15s, background 0.15s;
+    }
+    .saved-piano-card-remove:hover {
+      color: #e05555;
+      background: rgba(224,85,85,0.1);
+      transform: none;
+      box-shadow: none;
+    }
+    /* Piano inside saved card — scaled down using scaleX */
+    .saved-card-piano-wrap {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 4px;
+    }
+    .saved-card-piano-wrap .mini-piano {
+      transform-origin: left top;
+      transform: scale(0.68);
+      margin-bottom: calc((var(--white-h) * 0.68) - var(--white-h));
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 48px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      text-align: center;
+      opacity: 0.6;
     }
   </style>
+
+  <!-- Additive effects layer — glow, root highlight, inversion button -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-  <h1>🎹 Tunebot — Piano Progression Visualizer</h1>
 
+  <!-- Nav -->
+  <nav>
+    <a href="learn.html" class="nav-back">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 7H4M6 4l-3 3 3 3"/>
+      </svg>
+      Learn
+    </a>
+    <span class="nav-logo">&#127929; Tunebot</span>
+    <button class="nav-saved-btn" id="toggleSavedPanel">
+      <svg width="14" height="14" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3.5A1.5 1.5 0 013.5 2h8A1.5 1.5 0 0113 3.5v10l-5.5-2.5L2 13.5V3.5z"/>
+      </svg>
+      Saved Chords
+      <span class="saved-count" id="savedCount" style="display:none">0</span>
+    </button>
+  </nav>
+
+  <!-- Saved chords panel — fixed left rectangle -->
+  <aside id="savedPanel"></aside>
+
+  <!-- Header -->
+  <div class="page-header">
+    <p class="page-eyebrow">Chord Progression Generator</p>
+    <h1 class="page-title"><em>Compose</em> your progression</h1>
+    <p class="page-sub">Select a scale and genre — then click any chord card to hear it.</p>
+  </div>
+
+  <!-- Controls -->
   <div class="controls">
-<select id="keyDropdown">
-  <option>Select Scale</option>
-  <!-- Natural keys -->
-  <option value="A">A</option>
-  <option value="B">B</option>
-  <option value="C">C</option>
-  <option value="D">D</option>
-  <option value="E">E</option>
-  <option value="F">F</option>
-  <option value="G">G</option>
-  <!-- Sharp keys -->
-  <option value="A#">A#</option>
-  <option value="C#">C#</option>
-  <option value="D#">D#</option>
-  <option value="F#">F#</option>
-  <option value="G#">G#</option>
-</select>
+    <select id="keyDropdown">
+      <option>Select Scale</option>
+      <option value="A">A</option>
+      <option value="B">B</option>
+      <option value="C">C</option>
+      <option value="D">D</option>
+      <option value="E">E</option>
+      <option value="F">F</option>
+      <option value="G">G</option>
+      <option value="A#">A#</option>
+      <option value="C#">C#</option>
+      <option value="D#">D#</option>
+      <option value="F#">F#</option>
+      <option value="G#">G#</option>
+    </select>
 
     <select id="genreDropdown">
       <option>Select Genre</option>
@@ -217,12 +454,13 @@
     <button id="generateBtn">Generate Progression</button>
   </div>
 
-  <div id="progressionLabel">Select a scale and genre to start 🎶</div>
+  <div id="progressionLabel">Select a scale and genre to start</div>
 
   <div class="results" id="results"></div>
 
-  <footer>© 2025 Tunebot — Designed with 🎵 & creativity</footer>
+  <footer>© 2025 Tunebot — Designed with theory & creativity</footer>
 
+  <script src="https://unpkg.com/tone@14.8.49/build/Tone.js"></script>
   <script src="tunebot.js"></script>
 </body>
 </html>
